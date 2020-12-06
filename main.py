@@ -4,9 +4,10 @@ import tkinter as war
 from tkinter import *
 import time
 import random
-import gc
+import gc,itertools
+from queue import Queue
 
-class Cards:
+class Carti:
     cruce_2 = pygame.image.load('cards/cruce/Playing_card_club_2.png')
     cruce_3 = pygame.image.load('cards/cruce/Playing_card_club_3.png')
     cruce_4 = pygame.image.load('cards/cruce/Playing_card_club_4.png')
@@ -75,10 +76,10 @@ valori = {
     "cruce_8": 8,
     "cruce_9": 9,
     "cruce_10": 10,
-    "cruce_A": A,
-    "cruce_J": J,
-    "cruce_Q": Q,
-    "cruce_K": K,
+    "cruce_A": 15,
+    "cruce_J": 12,
+    "cruce_Q": 13,
+    "cruce_K": 14,
 
     "frunza_2": 2,
     "frunza_3": 3,
@@ -89,24 +90,24 @@ valori = {
     "frunza_8": 8,
     "frunza_9": 9,
     "frunza_10": 10,
-    "frunza_A": A,
-    "frunza_J": J,
-    "frunza_Q": Q,
-    "frunza_K": K,
+    "frunza_A": 15,
+    "frunza_J": 12,
+    "frunza_Q": 13,
+    "frunza_K": 14,
 
     "inima_2": 2,
-    "inima_3": 2,
-    "inima_4": 2,
-    "inima_5": 2,
-    "inima_6": 2,
-    "inima_7": 2,
-    "inima_8": 2,
-    "inima_9": 2,
-    "inima_10": 2,
-    "inima_A": A,
-    "inima_J": J,
-    "inima_Q": Q,
-    "inima_K": K,
+    "inima_3": 3,
+    "inima_4": 4,
+    "inima_5": 5,
+    "inima_6": 6,
+    "inima_7": 7,
+    "inima_8": 8,
+    "inima_9": 9,
+    "inima_10": 10,
+    "inima_A": 15,
+    "inima_J": 12,
+    "inima_Q": 13,
+    "inima_K": 14,
 
     "romb_2": 2,
     "romb_3": 3,
@@ -117,10 +118,10 @@ valori = {
     "romb_8": 8,
     "romb_9": 9,
     "romb_10": 10,
-    "romb_A": A,
-    "romb_J": J,
-    "romb_Q": Q,
-    "romb_K": K,
+    "romb_A": 15,
+    "romb_J": 12,
+    "romb_Q": 13,
+    "romb_K": 14,
 
 }
 
@@ -146,7 +147,37 @@ latime_pachet = 150
 lungime_carte = int(175*1.25)
 latime_carte = 175
 
-# Dimensiunea pachetului de carti pentru pc
+pachet = [carte
+          for carte in dir(Carti)
+          if not carte.startswith('__')]
+
+pachet_carti_pc = Queue(52)
+pachet_carti_player = Queue(52)
+pachet_carti_razboi = Queue(28)
+
+def creare_pachet():
+
+    random.shuffle(pachet)
+    global pachet_carti_pc, pachet_carti_player,pachet_carti_razboi
+
+    # ia primul element din coada cat timp maia vem carti
+    while not pachet_carti_razboi.empty():
+        pachet_carti_razboi.get()
+    while not pachet_carti_player.empty():
+        pachet_carti_player.get()
+    while not pachet_carti_pc.empty():
+        pachet_carti_pc.get()
+
+    const=0
+    for x in pachet:
+        if const % 2 == 0 :
+            pachet_carti_pc.put(x)
+        else:
+            pachet_carti_player.put(x)
+        const += 1
+
+
+# Dimensiunea pachetului de carti pentru pc si pozitionare pachetului
 pachet_pc = pygame.image.load('cards/cruce/Card_back_01.svg.png')
 pachet_pc_micsorat = pygame.transform.scale(pachet_pc, (latime_pachet, lungime_pachet))
 pachet_pc_x = 60
@@ -165,9 +196,75 @@ carte_curenta_player = pygame.image.load('cards/inima/Playing_card_heart_2.png')
 carte_curenta_pc_micsorata = pygame.transform.scale(carte_curenta_pc, (latime_carte , lungime_carte))
 carte_curenta_player_micsorata = pygame.transform.scale(carte_curenta_player,(latime_carte , lungime_carte))
 
+# culorile folosite in button
+white = (55, 120, 40)
+black = (60, 160, 40)
+red = (255, 0, 0)
 
+clicked = False
+font = pygame.font.SysFont('Arial',24)
+
+
+class button():
+    #Culoarea butoanelor si a textului
+    button_col = (55,125,40)
+    hover_col = (65,160,45)
+    click_col = (50,150,20)
+    text_col = (255,255,255)
+    width = 150
+    height=40
+
+    def __init__(self, x, y, text):
+        self.x = x
+        self.y = y
+        self.text = text
+
+    def draw_button(self):
+        global clicked
+        action = False
+
+        #pozitia mouse-ului
+        pozitie = pygame.mouse.get_pos()
+
+        #draptunghiul pentru buton
+        button_rectangle = Rect(self.x, self.y, self.width, self.height)
+
+        #verificam ce face mouse-ul si daca este apasat butonul
+        if button_rectangle.collidepoint(pozitie):
+            if pygame.mouse.get_pressed()[0] == 1: # if ul acesta ne spune daca butonul a fost click-at si dupa aia i-a fost dat drumul
+                clicked = True
+                pygame.draw.rect(display,self.click_col,button_rectangle) # daca butonul este apasat atunci ii dam alta culoare si il redesenam
+            elif pygame.mouse.get_pressed()[0] == 0 and clicked == True:
+                clicked = False # resetam click ul
+                action = True
+            else:
+                pygame.draw.rect(display, self.hover_col, button_rectangle)
+        else:
+            pygame.draw.rect(display, self.button_col, button_rectangle)
+
+        #adaugam umbre la button
+        pygame.draw.line(display, black, (self.x, self.y), (self.x + self.width, self.y), 2)
+        pygame.draw.line(display, black, (self.x, self.y), (self.x, self.y + self.height), 2)
+        pygame.draw.line(display, white, (self.x, self.y + self.height),(self.x + self.width, self.y + self.height),2)
+        pygame.draw.line(display, white, (self.x + self.width, self.y),(self.x + self.width, self.y + self.height),2)
+
+        #adaugam text butonului
+        text_image = font.render(self.text,True,self.text_col)
+        text_length = text_image.get_width()
+        display.blit(text_image, (self.x + int(self.width/2)-int(text_length/2), self.y + 5))
+        return action
+
+
+# Declarara globala a butoanelor
+score_button = button(1300, 800, "cfm")
+play_button = button(50, 650, 'Tap to play')
 
 def gameInit():
+    display.fill([10, 80, 10])
+    pygame.display.update()
+
+    global button, score_button, play_button,carte_curenta_player_micsorata,carte_curenta_pc,carte_curenta_player
+    global razboi,dimensiunea_razboiului
     # Pachetele de carti care se afiseaza in colturi
     display.blit(pachet_pc_micsorat, (pachet_pc_x, pachet_pc_y))
     display.blit(pachet_pc_micsorat, (pachet_pc_x + 3, pachet_pc_y + 3))
@@ -181,28 +278,157 @@ def gameInit():
     display.blit(pachet_player_micsorat, (pachet_player_x + 9, pachet_player_y + 9))
     display.blit(pachet_player_micsorat, (pachet_player_x + 12, pachet_player_y + 12))
 
+    # cartile player-ilor care se afiseaza in centru, in mod random
+    if not pachet_carti_player.empty():
 
-    display.blit(carte_curenta_pc_micsorata, (440,250))
-    display.blit(carte_curenta_player_micsorata, (650,250))
+        carte_curenta_player= pachet_carti_player.get()
+        display.blit(pygame.transform.scale(getattr(Carti,carte_curenta_player),(latime_carte,lungime_carte)), (650,250))
+        # display.blit(carte_curenta_player_micsorata, (650, 250))
 
+    dimensiune_pachet_player = font.render("Carti disponibile: " + str(pachet_carti_player.qsize()), True, (0, 0, 0))
+    display.blit(dimensiune_pachet_player, (pachet_player_x, pachet_player_y-40))
+
+    if not pachet_carti_pc.empty():
+        #afisarea cartilor in mod random pe ecran
+        carte_curenta_pc = pachet_carti_pc.get()
+        carte_curenta_pc_micsorata = getattr(Carti,carte_curenta_pc)
+        carte_curenta_pc_micsorata = pygame.transform.scale(carte_curenta_pc_micsorata, (latime_carte, lungime_carte))
+        display.blit(carte_curenta_pc_micsorata, (440,250))
+
+    dimensiune_pachet_pc = font.render("Carti disponibile: " + str(pachet_carti_pc.qsize()), True, (0, 0, 0))
+    # pygame.draw.rect(display,(255, 255, 255), (pachet_pc_x-20, pachet_pc_y- 30, latime_carte, lungime_carte))
+    display.blit(dimensiune_pachet_pc, (pachet_pc_x, pachet_pc_y - 20 + lungime_carte + 20))
+    pygame.display.update()
+
+    #pc-ul castiga cartea
+    if valori[carte_curenta_pc] > valori[carte_curenta_player]:
+        if razboi == False:
+            pachet_carti_pc.put(carte_curenta_pc)
+            pachet_carti_pc.put(carte_curenta_player)
+            print('Pc-ul are carte mai mare,ncsf...')
+        elif (razboi == True):
+            if pachet_carti_razboi.qsize() < dimensiunea_razboiului * 2:
+                pachet_carti_razboi.put(carte_curenta_pc)
+                pachet_carti_razboi.put(carte_curenta_player)
+            else:
+                pachet_carti_razboi.put(carte_curenta_pc)
+                pachet_carti_razboi.put(carte_curenta_player)
+                print('Razboiul s-a terminat. Player-ul a castigat')
+                while not pachet_carti_razboi.empty():
+                    pachet_carti_player.put(pachet_carti_razboi.get())
+
+
+    #player-ul castiga cartea
+    if valori[carte_curenta_pc] < valori[carte_curenta_player]:
+        if razboi == False:
+            pachet_carti_player.put(carte_curenta_player)
+            pachet_carti_player.put(carte_curenta_pc)
+            print('nope,playerul are cartea mai mare')
+        elif razboi == True:
+            if pachet_carti_razboi.qsize() < dimensiunea_razboiului * 2:
+                pachet_carti_razboi.put(carte_curenta_pc)
+                pachet_carti_razboi.put(carte_curenta_player)
+            else:
+                print('Razboiul s-a terminat. Pc-ul a castigat')
+                pachet_carti_razboi.put(carte_curenta_pc)
+                pachet_carti_razboi.put(carte_curenta_player)
+                while not pachet_carti_razboi.empty():
+                    pachet_carti_pc.put(pachet_carti_razboi.get())
+                razboi = False
+
+    #cazul in care este RAZBOI
+    if valori[carte_curenta_pc] == valori[carte_curenta_player]:
+        if razboi == False:
+            dimensiunea_razboiului = valori[carte_curenta_player]
+        elif (valori[carte_curenta_player] == 15):
+            dimensiunea_razboiului = 11
+        razboi == True
+        print("Razboi intre carti")
+        pachet_carti_razboi.put(carte_curenta_pc)
+        pachet_carti_razboi.put(carte_curenta_player)
+    # cazul in care avem razboi dupa razboi
+    elif razboi == True:
+        if pachet_carti_razboi.qsize() < dimensiunea_razboiului *2:
+            pachet_carti_razboi.put(carte_curenta_pc)
+            pachet_carti_razboi.put(carte_curenta_player)
+        else:
+            dimensiunea_razboiului += values[carte_curenta_player]
+            pachet_carti_razboi.put(carte_curenta_pc)
+            pachet_carti_razboi.put(carte_curenta_player)
+            print('Razboi dupa razboi')
+
+
+    score_button = button(1080, 50, 'See the Score')
+    play_button = button(50, 650, 'Tap to quit')
+    # if play_button.draw_button():
+    #     exit(0)
+    # if score_button.draw_button():
+    #     pygame.draw.rect(display, white, pygame.Rect(600, 50, 100, 50))
+    #     print('Play')
 
     pygame.display.update()
-    pygame.time.wait(500)
+    #pygame.time.wait(500)
+
+razboi = False
+dimensiunea_razboiului = 0
+prima_runda = False
+
 
 # Game Loop-aici se face tot
 def gameLoop():
 
+    global button,score_button,play_button
     running = True
 
     while running:
-        pygame.event.pump()
+
+        # pygame.event.pump()
         event = pygame.event.wait()
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            gameInit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    gameInit()
+
+                # pachet_player_x, pachet_player_y = event.pos
+                # if pachet_player.get_rect().collidepoint(pachet_player_x, pachet_player_y):
+                #     print('clicked on the image')
+
+        start_check=0
+        winner= ' '
+
+        if(start_check==0):
+            start_check=1
+            pygame.draw.rect(display, (0, 255, 0), (680, 380, 190, 50))
+
+        creare_pachet()
+        pygame.display.update()
+
+        while not pachet_carti_pc.empty() and not pachet_carti_player.empty():
+            pygame.event.pump()
+            event = pygame.event.wait()
+
+            if(event.type == QUIT):
+                exit(0)
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    gameInit()
+
+            if play_button.draw_button():
+                print("game has ended by quiting")
+                exit(0)
+
+            if pachet_carti_player.empty():
+                winner = 'Payer'
+                break
+            if pachet_carti_pc.empty():
+                winner = 'Pc'
+                break
+
+        pygame.display.update()
 
 if __name__ == '__main__':
     gameLoop()
