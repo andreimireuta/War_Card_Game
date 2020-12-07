@@ -206,7 +206,9 @@ red = (255, 0, 0)
 clicked = False
 font = pygame.font.SysFont('Arial',24)
 font_razboi= pygame.font.SysFont('Arial', 50)
+font_castigator = pygame.font.SysFont('Arial',40)
 font_titlu = pygame.font.SysFont('Arial', 80)
+font_scor = pygame.font.SysFont('Arial',30)
 
 
 class button():
@@ -265,12 +267,10 @@ dimensiunea_razboiului = 0
 carti_razboi_ramase = 0
 prima_runda = False
 
-def gameInit():
-    display.fill([10, 80, 10])
-    pygame.display.update()
 
-    global button, score_button, play_button,carte_curenta_player_micsorata,carte_curenta_pc,carte_curenta_player
-    global razboi,dimensiunea_razboiului,castigator_razboi,carti_razboi_ramase
+def afisare_pachet():
+    global pachet_pc_micsorat,pachet_player_micsorat,pachet_pc_x,pachet_pc_y,pachet_player_y,pachet_player_x
+
     # Pachetele de carti care se afiseaza in colturi
     display.blit(pachet_pc_micsorat, (pachet_pc_x, pachet_pc_y))
     display.blit(pachet_pc_micsorat, (pachet_pc_x + 3, pachet_pc_y + 3))
@@ -283,6 +283,25 @@ def gameInit():
     display.blit(pachet_player_micsorat, (pachet_player_x + 6, pachet_player_y + 6))
     display.blit(pachet_player_micsorat, (pachet_player_x + 9, pachet_player_y + 9))
     display.blit(pachet_player_micsorat, (pachet_player_x + 12, pachet_player_y + 12))
+
+
+def afisare_scor():
+    global scor_player,scor_pc
+    scor_afisat = font_scor.render("Pc " + str(scor_pc) + " - " + str(scor_player) + " Player", True, alb)
+    display.blit(scor_afisat,(1000, 50))
+    pygame.display.update()
+
+
+def gameInit():
+    display.fill([10, 80, 10])
+    pygame.display.update()
+
+    global button, score_button, play_button,carte_curenta_player_micsorata,carte_curenta_pc,carte_curenta_player
+    global razboi,dimensiunea_razboiului,castigator_razboi,carti_razboi_ramase
+
+    afisare_pachet()
+
+    afisare_scor()
 
     # cartile player-ilor care se afiseaza in centru, in mod random
     if not pachet_carti_player.empty() and not razboi:
@@ -353,8 +372,8 @@ def gameInit():
                 dimensiunea_razboiului = 0
                 pachet_carti_razboi.put(carte_curenta_pc)
                 pachet_carti_razboi.put(carte_curenta_player)
-                castigator_razboi = font.render('PC-ul a castigat razboiul!', True, alb)
-                display.blit(castigator_razboi,(550, 500))
+                castigator_razboi = font_castigator.render('PC-ul a castigat razboiul!', True, alb)
+                display.blit(castigator_razboi,(450, 500))
                 pygame.display.update()
                 print('Razboiul s-a terminat. Pc-ul a castigat')
                 while not pachet_carti_razboi.empty():
@@ -378,8 +397,8 @@ def gameInit():
                 #print('Razboiul s-a terminat. Pc-ul a castigat')
                 pachet_carti_razboi.put(carte_curenta_pc)
                 pachet_carti_razboi.put(carte_curenta_player)
-                castigator_razboi = font.render('Player-ul a castigat razboiul!', True, alb)
-                display.blit(castigator_razboi, (550, 500))
+                castigator_razboi = font_castigator.render('Player-ul a castigat razboiul!', True, alb)
+                display.blit(castigator_razboi, (430, 500))
                 while not pachet_carti_razboi.empty():
                     pachet_carti_player.put(pachet_carti_razboi.get())
 
@@ -426,23 +445,24 @@ def gameInit():
     #pygame.time.wait(500)
 
 
-
 # Declarara globala a butoanelor
 score_button = button(1300, 800, "cfm")
 play_button = button(50, 650, 'Tap to play')
 
-titlu_pagina = font_titlu.render("Jocul Razboi", True, alb)
-display.blit(titlu_pagina,(450,150))
+titlu_pagina = font_titlu.render("R a z b o i", True, alb)
+display.blit(titlu_pagina,(460,150))
 
 afisare_start = font_razboi.render("Click to start", True, alb)
 #pygame.draw.rect(display,(0, 0, 0), (600,400,250,100))
-display.blit(afisare_start, (530, 330))
+display.blit(afisare_start, (500, 330))
+scor_pc = 0
+scor_player = 0
 
 pygame.display.update()
 # Game Loop-aici se face tot
 def gameLoop():
 
-    global button,score_button,play_button
+    global button,score_button,play_button,titlu_pagina,razboi,scor_pc,scor_player
     running = True
 
     while running:
@@ -481,8 +501,8 @@ def gameLoop():
                 exit(0)
 
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    gameInit()
+                #if event.button == 1:
+                gameInit()
 
             # if play_button.draw_button():
             #     print("game has ended by quiting")
@@ -490,14 +510,32 @@ def gameLoop():
 
             if pachet_carti_player.empty():
                 castigator = 'Pc'
+                scor_pc +=1
+                razboi = False
                 break
+
             if pachet_carti_pc.empty():
                 castigator= 'Player'
+                scor_player += 1
+                razboi = False
                 break
+
         while castigator:
-            display.blit()
+            display.fill([10, 80, 10])
             print(castigator," wins !!!!")
-            castigator = ''
+            titlu_pagina = font_razboi.render("Joaca din nou ", True, alb)
+            afisare_castigator = font_razboi.render(castigator + "-ul a castigat  runda",True, alb)
+            display.blit(titlu_pagina, (500, 200))
+            display.blit(afisare_castigator,(400, 300))
+
+            pygame.display.update()
+
+            if event.type == pygame.QUIT:
+                exit(0)
+
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                castigator = ''
+
         pygame.display.update()
 
 if __name__ == '__main__':
