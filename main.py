@@ -350,8 +350,12 @@ def gameInit():
             else:
                 # =-//=
                 razboi = False
+                dimensiunea_razboiului = 0
                 pachet_carti_razboi.put(carte_curenta_pc)
                 pachet_carti_razboi.put(carte_curenta_player)
+                castigator_razboi = font.render('PC-ul a castigat razboiul!', True, alb)
+                display.blit(castigator_razboi,(550, 500))
+                pygame.display.update()
                 print('Razboiul s-a terminat. Pc-ul a castigat')
                 while not pachet_carti_razboi.empty():
                     pachet_carti_pc.put(pachet_carti_razboi.get())
@@ -369,10 +373,13 @@ def gameInit():
                 pachet_carti_razboi.put(carte_curenta_player)
             else:
                 razboi = False
+                dimensiunea_razboiului = 0
                 #punem cartile castigatoare in pachetul player-ului
                 #print('Razboiul s-a terminat. Pc-ul a castigat')
                 pachet_carti_razboi.put(carte_curenta_pc)
                 pachet_carti_razboi.put(carte_curenta_player)
+                castigator_razboi = font.render('Player-ul a castigat razboiul!', True, alb)
+                display.blit(castigator_razboi, (550, 500))
                 while not pachet_carti_razboi.empty():
                     pachet_carti_player.put(pachet_carti_razboi.get())
 
