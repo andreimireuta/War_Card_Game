@@ -206,6 +206,7 @@ red = (255, 0, 0)
 clicked = False
 font = pygame.font.SysFont('Arial',24)
 font_razboi= pygame.font.SysFont('Arial', 50)
+font_titlu = pygame.font.SysFont('Arial', 80)
 
 
 class button():
@@ -261,6 +262,7 @@ class button():
 razboi = False
 castigator_razboi=''
 dimensiunea_razboiului = 0
+carti_razboi_ramase = 0
 prima_runda = False
 
 def gameInit():
@@ -268,7 +270,7 @@ def gameInit():
     pygame.display.update()
 
     global button, score_button, play_button,carte_curenta_player_micsorata,carte_curenta_pc,carte_curenta_player
-    global razboi,dimensiunea_razboiului,castigator_razboi
+    global razboi,dimensiunea_razboiului,castigator_razboi,carti_razboi_ramase
     # Pachetele de carti care se afiseaza in colturi
     display.blit(pachet_pc_micsorat, (pachet_pc_x, pachet_pc_y))
     display.blit(pachet_pc_micsorat, (pachet_pc_x + 3, pachet_pc_y + 3))
@@ -288,13 +290,16 @@ def gameInit():
         display.blit(pygame.transform.scale(getattr(Carti,carte_curenta_player),(latime_carte,lungime_carte)), (650,250))
         # display.blit(carte_curenta_player_micsorata, (650, 250))
     else:
+        display.blit(carte_curenta_player_micsorata, (650, 250))
         copie= dimensiunea_razboiului
         carte_curenta_player = pachet_carti_player.get()
         carte_curenta_player_micsorata = getattr(Carti,carte_curenta_player)
         carte_curenta_player_micsorata = pygame.transform.scale(carte_curenta_player_micsorata, (latime_carte, lungime_carte))
-        pixeli = 0
-        while copie:
-            display.blit(carte_curenta_player_micsorata,(650 +pixeli, 250))
+
+        display.blit(carte_curenta_player_micsorata, (655, 250))
+        pixeli = 5
+        while copie - carti_razboi_ramase:
+            display.blit(carte_curenta_player_micsorata,(655 +pixeli, 250))
             pixeli+=5
             pygame.display.update()
             copie -=1
@@ -310,13 +315,18 @@ def gameInit():
         carte_curenta_pc_micsorata = pygame.transform.scale(carte_curenta_pc_micsorata, (latime_carte, lungime_carte))
         display.blit(carte_curenta_pc_micsorata, (440,250))
     else:
+        copie = dimensiunea_razboiului
         carte_curenta_pc = pachet_carti_pc.get()
         carte_curenta_pc_micsorata = getattr(Carti, carte_curenta_pc)
         carte_curenta_pc_micsorata = pygame.transform.scale(carte_curenta_pc_micsorata, (latime_carte, lungime_carte))
         display.blit(carte_curenta_pc_micsorata, (435, 250))
-        display.blit(carte_curenta_pc_micsorata, (430, 250))
-        display.blit(carte_curenta_pc_micsorata, (425, 250))
-        display.blit(carte_curenta_pc_micsorata, (420, 250))
+        display.blit(carte_curenta_pc_micsorata,(430,250))
+        pixeli = 5
+        while copie - carti_razboi_ramase:
+            display.blit(carte_curenta_pc_micsorata,(430 - pixeli, 250))
+            pixeli+=5
+            pygame.display.update()
+            copie -=1
 
     dimensiune_pachet_pc = font.render("Carti disponibile: " + str(pachet_carti_pc.qsize()), True, alb)
     # pygame.draw.rect(display,(255, 255, 255), (pachet_pc_x-20, pachet_pc_y- 30, latime_carte, lungime_carte))
@@ -324,7 +334,7 @@ def gameInit():
     pygame.display.update()
 
 
-    print("Dimensiunea pachetului este de :", pachet_carti_player.qsize() + pachet_carti_pc.qsize())
+    #print("Dimensiunea pachetului este de :", pachet_carti_player.qsize() + pachet_carti_pc.qsize())
     #pc-ul castiga cartea
     if valori[carte_curenta_pc] > valori[carte_curenta_player]:
         if razboi == False:
@@ -336,7 +346,7 @@ def gameInit():
                 #display.blit(pygame.transform.scale(getattr(Carti, carte_curenta_player), (latime_carte, lungime_carte)),(655, 255))
                 pachet_carti_razboi.put(carte_curenta_pc)
                 pachet_carti_razboi.put(carte_curenta_player)
-                print('pc ul te cam bate...')
+                #print('pc ul te cam bate...')
             else:
                 # =-//=
                 razboi = False
@@ -360,7 +370,7 @@ def gameInit():
             else:
                 razboi = False
                 #punem cartile castigatoare in pachetul player-ului
-                print('Razboiul s-a terminat. Pc-ul a castigat')
+                #print('Razboiul s-a terminat. Pc-ul a castigat')
                 pachet_carti_razboi.put(carte_curenta_pc)
                 pachet_carti_razboi.put(carte_curenta_player)
                 while not pachet_carti_razboi.empty():
@@ -414,9 +424,12 @@ def gameInit():
 score_button = button(1300, 800, "cfm")
 play_button = button(50, 650, 'Tap to play')
 
-title = font_razboi.render("Click to start", True, alb)
+titlu_pagina = font_titlu.render("Jocul Razboi", True, alb)
+display.blit(titlu_pagina,(450,150))
+
+afisare_start = font_razboi.render("Click to start", True, alb)
 #pygame.draw.rect(display,(0, 0, 0), (600,400,250,100))
-display.blit(title, (530, 330))
+display.blit(afisare_start, (530, 330))
 
 pygame.display.update()
 # Game Loop-aici se face tot
@@ -464,9 +477,9 @@ def gameLoop():
                 if event.button == 1:
                     gameInit()
 
-            if play_button.draw_button():
-                print("game has ended by quiting")
-                exit(0)
+            # if play_button.draw_button():
+            #     print("game has ended by quiting")
+            #     exit(0)
 
             if pachet_carti_player.empty():
                 castigator = 'Pc'
@@ -475,6 +488,7 @@ def gameLoop():
                 castigator= 'Player'
                 break
         while castigator:
+            display.blit()
             print(castigator," wins !!!!")
             castigator = ''
         pygame.display.update()
