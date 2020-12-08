@@ -156,6 +156,7 @@ pachet_carti_pc = Queue(52)
 pachet_carti_player = Queue(52)
 pachet_carti_razboi = Queue(52)
 
+# functia pentru crearea pachetului de carti
 def creare_pachet():
 
     random.shuffle(pachet)
@@ -273,6 +274,22 @@ prima_runda = False
 
 runde_jucate = 0
 
+# Declarara globala a butoanelor
+score_button = button(1300, 800, "cfm")
+play_button = button(50, 650, 'Tap to play')
+
+titlu_pagina = font_titlu.render("R a z b o i", True, alb)
+display.blit(titlu_pagina,(460,150))
+
+afisare_start = font_razboi.render("Click to start", True, alb)
+
+display.blit(afisare_start, (500, 330))
+scor_pc = 0
+scor_player = 0
+
+pygame.display.update()
+
+#functia care afiseaza in colt pachetele celor 2 jucatori
 def afisare_pachet():
     global pachet_pc_micsorat,pachet_player_micsorat,pachet_pc_x,pachet_pc_y,pachet_player_y,pachet_player_x
 
@@ -290,6 +307,7 @@ def afisare_pachet():
     display.blit(pachet_player_micsorat, (pachet_player_x + 12, pachet_player_y + 12))
 
 
+#functia care tine scorul si il afiseaza
 def afisare_scor():
     global scor_player,scor_pc
     scor_afisat = font_scor.render("Pc " + str(scor_pc) + " - " + str(scor_player) + " Player", True, alb)
@@ -304,13 +322,17 @@ def afisare_scor():
 #     timp +=1
 
 
+# functia care afiseaza pe ecran cartile player-ului
 def afisare_carti_player():
     # cartile player-ilor care se afiseaza in centru, in mod random
     global pachet_carti_player,dimensiunea_razboiului,carte_curenta_player,carti_razboi_ramase
     global latime_carte,lungime_carte,carte_curenta_player_micsorata
+    # Daca nu avem razboi si mai avem carti in pacget afisam doar o singura carte pe ecran
     if not pachet_carti_player.empty() and not razboi:
         carte_curenta_player = pachet_carti_player.get()
         display.blit(pygame.transform.scale(getattr(Carti, carte_curenta_player), (latime_carte, lungime_carte)),(650, 250))
+
+    # Daca avem razboi, afisam pe ecran cate o carte pe rand, care se suprapune usor peste cea precedenta
     else:
         display.blit(carte_curenta_player_micsorata, (650, 250))
         copie = dimensiunea_razboiului
@@ -318,6 +340,7 @@ def afisare_carti_player():
         carte_curenta_player_micsorata = getattr(Carti, carte_curenta_player)
         carte_curenta_player_micsorata = pygame.transform.scale(carte_curenta_player_micsorata,(latime_carte, lungime_carte))
 
+        #afisarea efectului de suprapunere a cartilor
         display.blit(carte_curenta_player_micsorata, (655, 250))
         pixeli = 5
         while copie - carti_razboi_ramase:
@@ -326,20 +349,25 @@ def afisare_carti_player():
             pygame.display.update()
             copie -= 1
 
+    #afisarea numarului de carti disponibil in pachetul player-ului
     dimensiune_pachet_player = font.render("Carti disponibile: " + str(pachet_carti_player.qsize()), True,(255, 255, 255))
     display.blit(dimensiune_pachet_player, (pachet_player_x, pachet_player_y - 40))
 
 
+# functia care afiseaza pe ecran cartile pc-ului
 def afisare_carti_pc():
     # afisarea cartilor pc-ului in mod random pe ecran
     global pachet_pc_micsorat,pachet_pc,carte_curenta_pc,carte_curenta_pc_micsorata
     global dimensiunea_razboiului,carti_razboi_ramase,lungime_carte,latime_carte
 
+    # daca nu avem razboi si mai avem carti in pachet afisam doar o carte pe ecran
     if not pachet_carti_pc.empty() and not razboi:
         carte_curenta_pc = pachet_carti_pc.get()
         carte_curenta_pc_micsorata = getattr(Carti,carte_curenta_pc)
         carte_curenta_pc_micsorata = pygame.transform.scale(carte_curenta_pc_micsorata, (latime_carte, lungime_carte))
         display.blit(carte_curenta_pc_micsorata, (440,250))
+
+    #Daca avem razboi, afisam pe ecran
     else:
         copie = dimensiunea_razboiului
         carte_curenta_pc = pachet_carti_pc.get()
@@ -413,6 +441,8 @@ def verificare_carti():
                     pachet_carti_player.put(pachet_carti_razboi.get())
 
 
+# functia care verifica daca este razboi intre cartile player-ilor
+# functia trateaza si cauzul in care avem unul sau mai multe razboiaie unul dupa celelalte
 def verificare_razboi():
     global button, score_button, play_button, carte_curenta_player_micsorata, carte_curenta_pc, carte_curenta_player
     global razboi, dimensiunea_razboiului, castigator_razboi, carti_razboi_ramase, runde_jucate
@@ -421,27 +451,34 @@ def verificare_razboi():
     if valori[carte_curenta_pc] == valori[carte_curenta_player]:
         if razboi == False:
             razboi = True
+            # daca avem razboi cu Asii, valoarea acestora va fi 11, nu 15 cum este in mod normal
             if (valori[carte_curenta_player] == 15):
                 dimensiunea_razboiului = 11
+            # in caz contrar, dimensiunea razboiului este egala cu valoarea pe care o are cartea in vectorul cu valori
             else:
                 dimensiunea_razboiului = valori[carte_curenta_player]
 
+            #punem in pachetul de carti de razboi cartile celor 2 jucatori
             print("Razboi intre carti de dimensiunea:", dimensiunea_razboiului)
             pachet_carti_razboi.put(carte_curenta_pc)
             pachet_carti_razboi.put(carte_curenta_player)
 
         # cazul in care avem razboi dupa razboi
         elif razboi == True:
+            # cat timp coada cu cartile de razboi nu este plina si indeplineste conditia
             if pachet_carti_razboi.qsize() < dimensiunea_razboiului * 2:
+                # punem in pachetul de carti de razboi cele 2 carti ale player-ilor
                 pachet_carti_razboi.put(carte_curenta_pc)
                 pachet_carti_razboi.put(carte_curenta_player)
             else:
-                dimensiunea_razboiului += valori[carte_curenta_player]
+                # cazul in care coada cu carti de razboi este mai mica decat dimeniunea razboiului
+                dimensiunea_razboiului += valori[carte_curenta_player]  # marim dimensiunea razboiului in numar de carti
                 pachet_carti_razboi.put(carte_curenta_pc)
                 pachet_carti_razboi.put(carte_curenta_player)
                 print('Razboi dupa razboi ', dimensiunea_razboiului)
 
 
+# functia care afiseaza dimensiunea razboiului si cartile ramase pana la final
 def afisare_dimensiune_razboi():
     global razboi,carti_razboi_ramase,dimensiunea_razboiului,pachet_carti_razboi
     if razboi == True:
@@ -454,11 +491,12 @@ def afisare_dimensiune_razboi():
             display.blit(afisare_carti_razboi_ramase, (595, 570))
 
 
+#functia in care este jocul propriu zis si apelul catre celelalte functii
 def gameInit():
     display.fill([10, 80, 10])
     pygame.display.update()
 
-    global button, score_button, play_button,carte_curenta_player_micsorata,carte_curenta_pc,carte_curenta_player
+    global carte_curenta_player_micsorata,carte_curenta_pc,carte_curenta_player
     global razboi,dimensiunea_razboiului,castigator_razboi,carti_razboi_ramase, runde_jucate
 
     afisare_pachet()
@@ -467,7 +505,7 @@ def gameInit():
 
     runde_jucate += 1
     afisare_runde = font.render("Runde jucate: " + str(runde_jucate), True, alb)
-    display.blit(afisare_runde, (1000, 50))
+    display.blit(afisare_runde, (1050, 50))
     pygame.display.update()
 
     afisare_carti_player()
@@ -483,27 +521,13 @@ def gameInit():
     pygame.display.update()
 
 
-# Declarara globala a butoanelor
-score_button = button(1300, 800, "cfm")
-play_button = button(50, 650, 'Tap to play')
-
-titlu_pagina = font_titlu.render("R a z b o i", True, alb)
-display.blit(titlu_pagina,(460,150))
-
-afisare_start = font_razboi.render("Click to start", True, alb)
-
-display.blit(afisare_start, (500, 330))
-scor_pc = 0
-scor_player = 0
-
-pygame.display.update()
-
 # Game Loop- bucla principala pe care o apelez din main
 def gameLoop():
 
     global button,score_button,play_button,titlu_pagina,razboi,scor_pc,scor_player,secunde_timp,timp
     running = True
 
+    # bucla principala care este activa cat timp nu este apasat butonul de close
     while running:
 
         pygame.event.pump()
@@ -520,12 +544,14 @@ def gameLoop():
             start_check=1
             pygame.draw.rect(display, (0, 255, 0), (680, 380, 190, 50))
 
+        ok = 0
         creare_pachet()
         pygame.display.update()
         if play_button.draw_button():
             gameInit()
 
-        while not pachet_carti_pc.empty() and not pachet_carti_player.empty():
+        # Loop-ul pentru fiecare runda care este jucata. Cat timp mai avem carti inca nu este gata runda
+        while not pachet_carti_pc.empty() and not pachet_carti_player.empty() and not ok:
             pygame.event.pump()
             event = pygame.event.wait()
 
@@ -542,28 +568,27 @@ def gameLoop():
                 gameInit()
                 #afisare_cronometru()
 
-            # if play_button.draw_button():
-            #     print("game has ended by quiting")
-            #     exit(0)
-
+            # Daca pachetul de carti ale player-ului este gata, a castigat PC
             if pachet_carti_player.empty():
-                castigator = 'Pc'
-                scor_pc +=1
-                runde_jucate = 0
-                razboi = False
-                break
+                castigator = 'Pc'       # adaugam castigarorul in variabila
+                scor_pc +=1             # adaugam un punct la scorul pc-ului
+                runde_jucate = 0        # resetam contorul pentru runde
+                razboi = False          # resetam variabila de razboi, in cazul in care este true
+                ok = 1                  # conditia de iesire din bucla
 
             if pachet_carti_pc.empty():
-                castigator= 'Player'
-                scor_player += 1
-                runde_jucate = 0
-                razboi = False
-                break
+                castigator= 'Player'    # adaugam castigatorul in variabila
+                scor_player += 1        # crestem scorul player-ului
+                runde_jucate = 0        # resetam rundele jucate
+                razboi = False          # resetam variabila pentru razboi
+                ok = 1                  # conditia de iesire
 
+        # cat timp avem un castigator, afisam un ecran final cu diferite informatii
         while castigator:
 
+            # diferite lucruri afisate pe ecranul final: cartigatorul, joaca din nou, etc.
             display.fill([10, 80, 10])
-            print(castigator," wins !!!!")
+            print(castigator,"-ul castiga !!!!")
             afisare_scor()
             titlu_pagina = font_razboi.render("Joaca din nou ", True, alb)
             afisare_castigator = font_razboi.render(castigator + "-ul a castigat  runda",True, alb)
@@ -573,9 +598,11 @@ def gameLoop():
             runde_jucate = 0
             pygame.display.update()
             pygame.event.wait()
+
             if event.type == pygame.QUIT:
                 exit(0)
 
+            # conditia de iesire din bucla (iesirea din ecranul final si inceperea unui alt meci daca nu este apasat exit)
             if event.type == pygame.MOUSEBUTTONDOWN:
                 #if event.button == 1:
                 castigator = ''
