@@ -276,14 +276,17 @@ runde_jucate = 0
 
 # Declarara globala a butoanelor
 score_button = button(1300, 800, "cfm")
-play_button = button(50, 650, 'Tap to play')
+play_button = button(550, 350, 'Tap to play')
+
+if play_button.draw_button():
+    gameInit()
 
 titlu_pagina = font_titlu.render("R a z b o i", True, alb)
-display.blit(titlu_pagina,(460,150))
+display.blit(titlu_pagina,(480,150))
 
-afisare_start = font_razboi.render("Click to start", True, alb)
+# afisare_start = font_razboi.render("Click to start", True, alb)
 
-display.blit(afisare_start, (500, 330))
+# display.blit(afisare_start, (500, 330))
 scor_pc = 0
 scor_player = 0
 
@@ -519,6 +522,7 @@ def gameInit():
     afisare_dimensiune_razboi()
 
     pygame.display.update()
+
 
 
 # Game Loop- bucla principala pe care o apelez din main
